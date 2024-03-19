@@ -1,0 +1,35 @@
+.compress {
+  display: flex;
+}
+.my-drop-zone {
+  border: dotted 3px lightgray;
+  width: 200px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.nv-file-over {
+  border: dotted 3px red;
+} /* Default class applied to drop zones on over */
+.another-file-over-class {
+  border: dotted 3px green;
+}
+
+.compression-algorithm {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  p {
+    margin-right: 1rem;
+  }
+}
+
+.password {
+  display: flex;
+  align-items: center;
+
+  p {
+    margin-right: 1rem;
+  }
+}

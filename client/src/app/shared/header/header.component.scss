@@ -1,0 +1,30 @@
+:host {
+    background: white;
+    display: flex;
+
+    .active {
+        color: red;
+    }
+
+    .header {
+        list-style: none;
+        display: flex;
+
+        &__item {
+            text-decoration: none;
+            & + .header__item {
+                margin-left: 1rem;
+            }
+        }
+
+        &__link {
+            color: black;
+            text-decoration: none;
+            text-underline-offset: 0.25rem;
+
+            &.active {
+                text-decoration: underline;
+            }
+        }
+    }
+}

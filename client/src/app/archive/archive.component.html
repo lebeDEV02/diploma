@@ -1,0 +1,171 @@
+<div class="container">
+  <div class="compress">
+    <div>
+      <div
+        ng2FileDrop
+        [ngClass]="{ 'nv-file-over': hasBaseDropZoneOver }"
+        (fileOver)="fileOverBase($event)"
+        [uploader]="uploader"
+        class="well my-drop-zone"
+        style="margin-bottom: 20px"
+      >
+        Перетащите файлы
+      </div>
+
+      <input type="file" ng2FileSelect [uploader]="uploader" multiple />
+    </div>
+    <div class="col-md-9" style="margin-bottom: 40px">
+      <h3>Очередь загрузки</h3>
+      <p>Длина очереди: {{ uploader?.queue?.length }}</p>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="50%">Название</th>
+            <th>Размер</th>
+            <th>Прогресс</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of uploader.queue">
+            <td>
+              <strong>{{ item?.file?.name }}</strong>
+            </td>
+            <td *ngIf="uploader.options.isHTML5" nowrap>
+              {{ item?.file?.size / 1024 / 1024 | number : ".2" }} MB
+            </td>
+            <td *ngIf="uploader.options.isHTML5">
+              <div class="progress" style="margin-bottom: 0">
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  [ngStyle]="{ width: item.progress + '%' }"
+                ></div>
+              </div>
+            </td>
+            <td class="text-center">
+              <span *ngIf="item.isSuccess"
+                ><i class="glyphicon glyphicon-ok"></i
+              ></span>
+              <span *ngIf="item.isCancel"
+                ><i class="glyphicon glyphicon-ban-circle"></i
+              ></span>
+              <span *ngIf="item.isError"
+                ><i class="glyphicon glyphicon-remove"></i
+              ></span>
+            </td>
+            <td nowrap>
+              <button
+                type="button"
+                class="btn btn-success btn-xs"
+                (click)="item.upload()"
+                [disabled]="item.isReady || item.isUploading || item.isSuccess"
+              >
+                <span class="glyphicon glyphicon-upload"></span> Загрузить
+              </button>
+              <button
+                type="button"
+                class="btn btn-warning btn-xs"
+                (click)="item.cancel()"
+                [disabled]="!item.isUploading"
+              >
+                <span class="glyphicon glyphicon-ban-circle"></span> Отменить
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger btn-xs"
+                (click)="item.remove()"
+              >
+                <span class="glyphicon glyphicon-trash"></span> Удалить
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div>
+        <div>
+          Прогресс очереди:
+          <div class="progress" style="">
+            <div
+              class="progress-bar"
+              role="progressbar"
+              [ngStyle]="{ width: uploader.progress + '%' }"
+            ></div>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-success btn-s"
+          (click)="uploader.uploadAll()"
+          [disabled]="!uploader.getNotUploadedItems().length"
+        >
+          <span class="glyphicon glyphicon-upload"></span> Загрузить все
+        </button>
+        <button
+          type="button"
+          class="btn btn-warning btn-s"
+          (click)="uploader.cancelAll()"
+          [disabled]="!uploader.isUploading"
+        >
+          <span class="glyphicon glyphicon-ban-circle"></span> Отменить все
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger btn-s"
+          (click)="uploader.clearQueue()"
+          [disabled]="!uploader.queue.length"
+        >
+          <span class="glyphicon glyphicon-trash"></span> Удалить все
+        </button>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>Опции:</h3>
+    <div class="compression-algorithm">
+      <p>Алгоритм сжатия:</p>
+
+      <form tuiGroup [collapsed]="true" [formGroup]="testForm">
+        <tui-radio-block
+          contentAlign="right"
+          formControlName="testValue"
+          item="orange"
+          size="l"
+        >
+          <div class="content">7Zip</div>
+        </tui-radio-block>
+        <tui-radio-block
+          contentAlign="right"
+          formControlName="testValue"
+          item="pineapple"
+          size="l"
+        >
+          <div class="content">Brottli</div>
+        </tui-radio-block>
+      </form>
+    </div>
+    <div class="password">
+      <p>Пароль:</p>
+      <div>
+        <tui-toggle
+          formControlName="isChecked"
+          size="l"
+          class="tui-space_left-1"
+        ></tui-toggle>
+      </div>
+    </div>
+    <tui-input-password
+      *ngIf="isChecked"
+      formControlName="testValue"
+      tuiTextfieldSize="m"
+      class="tui-space_top-2"
+      [tuiTextfieldLabelOutside]="true"
+    >
+      Type a password
+      <input placeholder="Make it secure!" tuiTextfield />
+    </tui-input-password>
+  </div>
+</div>
