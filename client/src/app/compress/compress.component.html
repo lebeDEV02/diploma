@@ -1,9 +1,28 @@
 <div class="container">
+  Что вы хотите сделать
+  <form tuiGroup [collapsed]="true" [formGroup]="option">
+    <tui-radio-block
+      contentAlign="right"
+      formControlName="action"
+      item="compress"
+      size="l"
+    >
+      <div class="content">Сжать</div>
+    </tui-radio-block>
+    <tui-radio-block
+      contentAlign="right"
+      formControlName="action"
+      item="decompress"
+      size="l"
+    >
+      <div class="content">Разжать</div>
+    </tui-radio-block>
+  </form>
   <div class="compress">
     <div>
       <div
         ng2FileDrop
-        name="file"
+        name="files"
         [uploader]="uploader"
         class="well my-drop-zone"
         style="margin-bottom: 20px"
@@ -13,7 +32,7 @@
 
       <input
         type="file"
-        name="file"
+        name="files"
         ng2FileSelect
         [uploader]="uploader"
         multiple
@@ -107,7 +126,7 @@
           (click)="uploader.uploadAll()"
           [disabled]="!uploader.getNotUploadedItems().length"
         >
-          <span class="glyphicon glyphicon-upload"></span> Загрузить все
+          <span class="glyphicon glyphicon-upload" (click)="onUploadAllClick()"></span> Загрузить все
         </button>
         <button
           type="button"
@@ -128,7 +147,7 @@
       </div>
     </div>
   </div>
-  <div>
+  <!-- <div>
     <h3>Опции:</h3>
     <div class="compression-algorithm">
       <p>Алгоритм сжатия:</p>
@@ -164,5 +183,5 @@
         Укажите степень сжатия
       </tui-input-slider>
     </div>
-  </div>
+  </div> -->
 </div>

@@ -4,7 +4,7 @@ import {
   HttpClientModule,
   HttpResponse,
 } from '@angular/common/http';
-import { Component, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, effect, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -29,8 +29,6 @@ import {
   TuiStringifyPipeModule,
 } from '@taiga-ui/kit';
 import { FileUploader, FileItem, FileUploadModule } from 'ng2-file-upload';
-const URL = 'http://localhost:3000/upload';
-// const URL = 'http://localhost:3000/decompress';
 
 @Component({
   selector: 'app-compress',
@@ -59,39 +57,53 @@ const URL = 'http://localhost:3000/upload';
   styleUrl: './compress.component.scss',
 })
 export class CompressComponent {
+  private URL = signal('http://localhost:3000/upload');
+
   public uploader: FileUploader = new FileUploader({
-    url: URL,
+    url: this.URL(),
     disableMultipart: false,
-    autoUpload: true,
+    autoUpload: false,
     method: 'post',
-    itemAlias: 'file',
+    itemAlias: 'files', // Change this line
+  });
+
+
+  option = new FormGroup({
+    action: new FormControl('compress')
   });
 
   public onFileSelected(event: any) {
     const file: File = event[0];
-    console.log(file);
+    const fileItem = new FileItem(this.uploader, file, {} as any);
+    fileItem.alias = 'files'; // 'files' should match the field name in multer
+    this.uploader.queue.push(fileItem);
   }
 
   constructor() {
-    this.uploader.response.subscribe((response: Blob) => {
-      // Assuming response is a Blob received from the server
-      this.handleBlobResponse(response);
+    this.option.valueChanges.subscribe(({action}) => {
+      const newUrl = action === 'compress' ? 'http://localhost:3000/upload' : 'http://localhost:3000/decompress';
+      this.URL.set(newUrl);
+      this.uploader.setOptions({ url: newUrl });
     });
+  
+    this.uploader.onCompleteItem = (item: any, response: string, status: any, headers: any) => {
+      alert("File uploaded successfully");
+    };
   }
 
-  handleBlobResponse(blob: Blob) {
-    // Extract file name from content disposition header or use a default
-    const filename = Date.now() + '_downloaded_file.txt';
-
-    // Create a File object from the Blob
-    const file = new File([blob], filename);
-
-    // Now you can use the 'file' object as needed
-    console.log('Downloaded TXT File:', file);
-
-    // Trigger download
-    this.triggerDownload(file);
-  }
+    onUploadAllClick() {
+      const action = this.option.get('action')?.value;
+    
+      if (action === 'compress') {
+        this.URL.set('http://localhost:3000/upload')
+        // Use the compress endpoint
+      } else if (action === 'decompress') {
+        this.URL.set('http://localhost:3000/decompress')
+        // Use the decompress endpoint
+      }
+      console.log(this.URL())
+    this.uploader.uploadAll();
+    }
 
   triggerDownload(file: File) {
     const downloadLink = document.createElement('a');
@@ -114,24 +126,4 @@ export class CompressComponent {
   readonly sliderStep = 1;
   readonly steps = (this.max - this.min) / this.sliderStep;
   readonly quantum = 0.01;
-
-  readonly control = new FormControl(1);
-
-  readonly control2 = new FormControl();
-
-  items = [
-    'Luke Skywalker',
-    'Leia Organa Solo',
-    'Darth Vader',
-    'Han Solo',
-    'Obi-Wan Kenobi',
-    'Yoda',
-  ];
-
-  readonly stringify = (item: { name: string; surname: string }): string =>
-    `${item.name} ${item.surname}`;
-
-  readonly testForm = new FormGroup({
-    testValue: new FormControl(''),
-  });
 }
