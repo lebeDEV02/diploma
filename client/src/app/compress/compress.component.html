@@ -1,11 +1,11 @@
 <div class="container">
-  Что вы хотите сделать
-  <form tuiGroup [collapsed]="true" [formGroup]="option">
+  <h1 class="tui-text_h2">Что вы хотите сделать?</h1>
+  <form tuiGroup [collapsed]="true" [formGroup]="option"       class="form-group">
     <tui-radio-block
       contentAlign="right"
       formControlName="action"
       item="compress"
-      size="l"
+      size="m"
     >
       <div class="content">Сжать</div>
     </tui-radio-block>
@@ -13,7 +13,7 @@
       contentAlign="right"
       formControlName="action"
       item="decompress"
-      size="l"
+      size="m"
     >
       <div class="content">Разжать</div>
     </tui-radio-block>

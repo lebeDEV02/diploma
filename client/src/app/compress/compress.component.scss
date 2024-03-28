@@ -16,6 +16,11 @@
   border: dotted 3px green;
 }
 
+.form-group {
+  max-width: 350px;
+  margin-bottom: 0.5rem;
+}
+
 .compression-algorithm {
   display: flex;
   align-items: center;

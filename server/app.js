@@ -1,71 +1,68 @@
 const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
 const multer = require('multer');
-const zlib = require('zlib');
-const { createGzip } = require('zlib');
 const fs = require('fs');
 const path = require('path');
-const archiver = require('archiver');
+const zlib = require('zlib');
+const { Readable } = require('stream');
+const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
-const { Readable } = require('stream');
-
-
-// Enable CORS
 app.use(cors({ origin: 'http://localhost:4200', credentials: true }));
 
-// Set up multer for file uploads
-const storage = multer.memoryStorage(); // Use memory storage for simplicity
-
-// Parse incoming requests with JSON payloads
-app.use(bodyParser.json());
 const upload = multer();
 
 app.post('/upload', upload.array('files'), (req, res) => {
-  console.log('COMPRESS')
-
-  if (!req.files || req.files.length === 0) {
+  console.log('UPLOAD')
+  if (!req.files) {
     res.status(400).send({ message: 'No files uploaded.' });
     return;
   }
 
-  req.files.forEach((file) => {
-    // Create a gzip instance
-    const gzip = createGzip();
+  const outputDirectory = path.join(__dirname, 'uploads');
+  // Create the output directory if it doesn't exist
+  fs.mkdirSync(outputDirectory, { recursive: true });
 
-    // Generate a timestamp
-    const timestamp = Date.now();
+  const promises = req.files.map((file, index) => {
+    return new Promise((resolve, reject) => {
+      // Create a Brotli compress instance
+      const brotliCompress = zlib.createBrotliCompress();
 
-    // Append the timestamp to the filename
-    const outputFilePath = path.join(__dirname, 'uploads', 'file_' + timestamp + '.gz');
+      // Define the output file paths
+      const compressedFileName = 'compressed_file_' + Date.now() + '.br';
+      const outputFilePath = path.join(outputDirectory, compressedFileName);
 
-    // Create the output directory if it doesn't exist
-    fs.mkdirSync(path.dirname(outputFilePath), { recursive: true });
+      // Create read and write streams
+      const readStream = new Readable();
+      readStream._read = () => {}; // _read is required but you can noop it
+      readStream.push(file.buffer);
+      readStream.push(null);
 
-    // Create read and write streams
-    const readStream = new Readable();
-    readStream._read = () => {}; // _read is required but you can noop it
-    readStream.push(file.buffer);
-    readStream.push(null);
+      const writeStream = fs.createWriteStream(outputFilePath);
 
-    const writeStream = fs.createWriteStream(outputFilePath);
+      // Pipe the read stream into the Brotli compress instance and then into the write stream
+      readStream.pipe(brotliCompress).pipe(writeStream);
 
-    // Pipe the read stream into the gzip instance and then into the write stream
-    readStream.pipe(gzip).pipe(writeStream);
+      writeStream.on('finish', function () {
+        resolve(compressedFileName);
+      });
 
-    writeStream.on('finish', function () {
-      // Set the headers to trigger a file download in the client's browser
-      // res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(outputFilePath));
-      // res.setHeader('Content-Transfer-Encoding', 'binary');
-      // res.setHeader('Content-Type', 'application/octet-stream');
-      res.setHeader('Content-Encoding', 'gzip'); // Set Content-Encoding to gzip
-
-      res.download(outputFilePath);
+      writeStream.on('error', function (err) {
+        reject(err);
+      });
     });
   });
+
+  Promise.all(promises)
+    .then((fileNames) => {
+      const fileUrls = fileNames.map(fileName => `${req.protocol}://${req.get('host')}/uploads/${fileName}`);
+      res.send({ message: 'Files compressed successfully', files: fileUrls });
+    })
+    .catch((err) => {
+      res.status(500).send({ message: 'Error compressing files', error: err.message });
+    });
 });
+// Serve static files from the "output" directory
+app.use('/output', express.static(path.join(__dirname, 'output')));
 
 app.post('/decompress', upload.array('files'), (req, res) => {
   if (!req.files) {
@@ -79,8 +76,8 @@ app.post('/decompress', upload.array('files'), (req, res) => {
 
   const promises = req.files.map((file, index) => {
     return new Promise((resolve, reject) => {
-      // Create a gunzip instance
-      const gunzip = zlib.createGunzip();
+      // Create a Brotli decompress instance
+      const brotliDecompress = zlib.createBrotliDecompress();
 
       // Define the output file paths
       const decompressedFileName = 'decompressed_file_' + Date.now() + '.txt';
@@ -94,8 +91,8 @@ app.post('/decompress', upload.array('files'), (req, res) => {
 
       const writeStream = fs.createWriteStream(outputFilePath);
 
-      // Pipe the read stream into the gunzip instance and then into the write stream
-      readStream.pipe(gunzip).pipe(writeStream);
+      // Pipe the read stream into the Brotli decompress instance and then into the write stream
+      readStream.pipe(brotliDecompress).pipe(writeStream);
 
       writeStream.on('finish', function () {
         resolve(decompressedFileName);
@@ -117,7 +114,6 @@ app.post('/decompress', upload.array('files'), (req, res) => {
     });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
 });
