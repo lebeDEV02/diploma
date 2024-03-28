@@ -67,9 +67,13 @@ export class CompressComponent {
     itemAlias: 'files', // Change this line
   });
 
+  compressionLevel = 1;
+
+
+  isCompress = effect(() => this.option.get('action')?.value === 'compress');
 
   option = new FormGroup({
-    action: new FormControl('compress')
+    action: new FormControl('compress'),
   });
 
   public onFileSelected(event: any) {
@@ -80,8 +84,9 @@ export class CompressComponent {
   }
 
   constructor() {
-    this.option.valueChanges.subscribe(({action}) => {
+    this.option.valueChanges.subscribe(({ action }) => {
       const newUrl = action === 'compress' ? 'http://localhost:3000/upload' : 'http://localhost:3000/decompress';
+      console.log(this.compressionLevel)
       this.URL.set(newUrl);
       this.uploader.setOptions({ url: newUrl });
     });
@@ -93,15 +98,17 @@ export class CompressComponent {
 
     onUploadAllClick() {
       const action = this.option.get('action')?.value;
-    
+      console.log('UPLOAD ALL');
+      
       if (action === 'compress') {
         this.URL.set('http://localhost:3000/upload')
+        this.uploader.setOptions({ url: 'http://localhost:3000/upload', additionalParameter: { compressionLevel: this.compressionLevel }});
         // Use the compress endpoint
       } else if (action === 'decompress') {
         this.URL.set('http://localhost:3000/decompress')
         // Use the decompress endpoint
       }
-      console.log(this.URL())
+      console.log(this.uploader)
     this.uploader.uploadAll();
     }
 
@@ -122,7 +129,7 @@ export class CompressComponent {
   }
 
   readonly min = 1;
-  readonly max = 9;
+  readonly max = 11;
   readonly sliderStep = 1;
   readonly steps = (this.max - this.min) / this.sliderStep;
   readonly quantum = 0.01;

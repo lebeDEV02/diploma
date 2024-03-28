@@ -12,12 +12,16 @@ app.use(cors({ origin: 'http://localhost:4200', credentials: true }));
 const upload = multer();
 
 app.post('/upload', upload.array('files'), (req, res) => {
-  console.log('UPLOAD')
+  console.log(req.body)
   if (!req.files) {
     res.status(400).send({ message: 'No files uploaded.' });
     return;
   }
 
+
+  const compressionLevel = Number(req.body.compressionLevel); // Extract compressionLevel from the request body
+
+  console.log('COMPRESSION LEVEL', compressionLevel)
   const outputDirectory = path.join(__dirname, 'uploads');
   // Create the output directory if it doesn't exist
   fs.mkdirSync(outputDirectory, { recursive: true });
@@ -25,7 +29,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
   const promises = req.files.map((file, index) => {
     return new Promise((resolve, reject) => {
       // Create a Brotli compress instance
-      const brotliCompress = zlib.createBrotliCompress();
+      const brotliCompress = zlib.createBrotliCompress({ params: compressionLevel });
 
       // Define the output file paths
       const compressedFileName = 'compressed_file_' + Date.now() + '.br';

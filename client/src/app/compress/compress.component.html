@@ -123,7 +123,7 @@
         <button
           type="button"
           class="btn btn-success btn-s"
-          (click)="uploader.uploadAll()"
+          (click)="onUploadAllClick()"
           [disabled]="!uploader.getNotUploadedItems().length"
         >
           <span class="glyphicon glyphicon-upload" (click)="onUploadAllClick()"></span> Загрузить все
@@ -147,41 +147,21 @@
       </div>
     </div>
   </div>
-  <!-- <div>
+  <div>
+    @if (option.get('action')?.value === 'compress') {
     <h3>Опции:</h3>
-    <div class="compression-algorithm">
-      <p>Алгоритм сжатия:</p>
-
-      <form tuiGroup [collapsed]="true" [formGroup]="testForm">
-        <tui-radio-block
-          contentAlign="right"
-          formControlName="testValue"
-          item="orange"
-          size="l"
+      <div class="compression-level">
+        <p>Степень сжатия:</p>
+        <tui-input-slider
+          [max]="max"
+          [min]="min"
+          [quantum]="quantum"
+          [steps]="steps"
+          [(ngModel)]="compressionLevel"
         >
-          <div class="content">Pulverizr</div>
-        </tui-radio-block>
-        <tui-radio-block
-          contentAlign="right"
-          formControlName="testValue"
-          item="pineapple"
-          size="l"
-        >
-          <div class="content">Imagemin</div>
-        </tui-radio-block>
-      </form>
-    </div>
-    <div class="compression-level">
-      <p>Степень сжатия:</p>
-      <tui-input-slider
-        [formControl]="control"
-        [max]="max"
-        [min]="min"
-        [quantum]="quantum"
-        [steps]="steps"
-      >
-        Укажите степень сжатия
-      </tui-input-slider>
-    </div>
-  </div> -->
+          Укажите степень сжатия
+        </tui-input-slider>
+      </div>
+    }
+  </div>
 </div>
