@@ -4,18 +4,27 @@ import {
   HttpClientModule,
   HttpResponse,
 } from '@angular/common/http';
-import { Component, EventEmitter, effect, signal } from '@angular/core';
+import { Component, EventEmitter, Inject, effect, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
+  TuiAlertModule,
+  TuiAlertService,
   TuiDataListModule,
   TuiDropdownModule,
   TuiGroupModule,
   TuiTextfieldControllerModule,
+  tuiFadeIn,
+  tuiHeightCollapse,
+  tuiSlideInBottom,
+  tuiSlideInLeft,
+  tuiSlideInRight,
+  tuiSlideInTop,
 } from '@taiga-ui/core';
 import {
   TuiComboBoxModule,
@@ -52,7 +61,10 @@ import { FileUploader, FileItem, FileUploadModule } from 'ng2-file-upload';
     TuiGroupModule,
     TuiRadioBlockModule,
     HttpClientModule,
+    TuiAlertModule,
+    
   ],
+  animations: [tuiSlideInLeft, tuiSlideInTop, tuiSlideInBottom, tuiSlideInRight, tuiFadeIn, tuiHeightCollapse],
   templateUrl: './compress.component.html',
   styleUrl: './compress.component.scss',
 })
@@ -83,7 +95,7 @@ export class CompressComponent {
     this.uploader.queue.push(fileItem);
   }
 
-  constructor() {
+  constructor(@Inject(TuiAlertService) private readonly alerts: TuiAlertService) {
     this.option.valueChanges.subscribe(({ action }) => {
       const newUrl = action === 'compress' ? 'http://localhost:3000/upload' : 'http://localhost:3000/decompress';
       console.log(this.compressionLevel)
@@ -92,7 +104,11 @@ export class CompressComponent {
     });
   
     this.uploader.onCompleteItem = (item: any, response: string, status: any, headers: any) => {
-      alert("File uploaded successfully");
+      this.alerts.open('Файл успешно загружен!').subscribe({
+        complete: () => {
+          console.log('Файл успешно загружен!');
+        },
+      });
     };
   }
 

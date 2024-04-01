@@ -3,16 +3,15 @@
     <div>
       <div
         ng2FileDrop
-        [ngClass]="{ 'nv-file-over': hasBaseDropZoneOver }"
-        (fileOver)="fileOverBase($event)"
         [uploader]="uploader"
+        name="files"
         class="well my-drop-zone"
         style="margin-bottom: 20px"
       >
         Перетащите файлы
       </div>
 
-      <input type="file" ng2FileSelect [uploader]="uploader" multiple />
+      <input type="file" name="files" ng2FileSelect [uploader]="uploader" multiple (onFileSelected)="onFileSelected($event)" />
     </div>
     <div class="col-md-9" style="margin-bottom: 40px">
       <h3>Очередь загрузки</h3>
@@ -29,7 +28,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of uploader.queue">
+          <tr *ngFor="let item of uploader.queue; let i = index">
             <td>
               <strong>{{ item?.file?.name }}</strong>
             </td>
@@ -76,7 +75,7 @@
               <button
                 type="button"
                 class="btn btn-danger btn-xs"
-                (click)="item.remove()"
+                (click)="removeFile(item, i)"
               >
                 <span class="glyphicon glyphicon-trash"></span> Удалить
               </button>
@@ -99,7 +98,7 @@
         <button
           type="button"
           class="btn btn-success btn-s"
-          (click)="uploader.uploadAll()"
+          (click)="uploadAll()"
           [disabled]="!uploader.getNotUploadedItems().length"
         >
           <span class="glyphicon glyphicon-upload"></span> Загрузить все
@@ -115,7 +114,7 @@
         <button
           type="button"
           class="btn btn-danger btn-s"
-          (click)="uploader.clearQueue()"
+          (click)="removeAllFiles()"
           [disabled]="!uploader.queue.length"
         >
           <span class="glyphicon glyphicon-trash"></span> Удалить все
@@ -128,44 +127,36 @@
     <div class="compression-algorithm">
       <p>Алгоритм сжатия:</p>
 
-      <form tuiGroup [collapsed]="true" [formGroup]="testForm">
+      <form tuiGroup [collapsed]="true" [formGroup]="option">
         <tui-radio-block
           contentAlign="right"
-          formControlName="testValue"
-          item="orange"
+          formControlName="type"
+          item="zip"
           size="l"
         >
-          <div class="content">7Zip</div>
+          <div class="content">zip</div>
         </tui-radio-block>
         <tui-radio-block
           contentAlign="right"
-          formControlName="testValue"
-          item="pineapple"
+          formControlName="type"
+          item="tar"
           size="l"
         >
-          <div class="content">Brottli</div>
+          <div class="content">tar</div>
         </tui-radio-block>
       </form>
     </div>
-    <div class="password">
-      <p>Пароль:</p>
-      <div>
-        <tui-toggle
-          formControlName="isChecked"
-          size="l"
-          class="tui-space_left-1"
-        ></tui-toggle>
-      </div>
+    <div class="compression-level">
+      <p>Степень сжатия:</p>
+      <tui-input-slider
+        [max]="max"
+        [min]="min"
+        [quantum]="quantum"
+        [steps]="steps"
+        [(ngModel)]="compressionLevel"
+      >
+        Укажите степень сжатия
+      </tui-input-slider>
     </div>
-    <tui-input-password
-      *ngIf="isChecked"
-      formControlName="testValue"
-      tuiTextfieldSize="m"
-      class="tui-space_top-2"
-      [tuiTextfieldLabelOutside]="true"
-    >
-      Type a password
-      <input placeholder="Make it secure!" tuiTextfield />
-    </tui-input-password>
   </div>
 </div>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   TuiInputPasswordModule,
+  TuiInputSliderModule,
   TuiRadioBlockModule,
   TuiSelectModule,
   TuiToggleModule,
@@ -14,9 +15,10 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
-const URL = 'https://evening-anchorage-3159.herokuapp.com/api/';
+const URL = 'http://localhost:3000/archive';
 @Component({
   selector: 'app-archive',
   standalone: true,
@@ -31,47 +33,75 @@ const URL = 'https://evening-anchorage-3159.herokuapp.com/api/';
     ReactiveFormsModule,
     TuiInputPasswordModule,
     TuiTextfieldControllerModule,
+    HttpClientModule,
+    TuiInputSliderModule
   ],
   templateUrl: './archive.component.html',
   styleUrl: './archive.component.scss',
 })
 export class ArchiveComponent {
-  uploader: FileUploader;
-  hasBaseDropZoneOver: boolean;
-  hasAnotherDropZoneOver: boolean;
-  response: string;
 
-  constructor() {
-    this.uploader = new FileUploader({
-      url: URL,
-      disableMultipart: true, // 'DisableMultipart' must be 'true' for formatDataFunction to be called.
-      formatDataFunctionIsAsync: true,
-      formatDataFunction: async (item: any) => {
-        return new Promise((resolve, reject) => {
-          resolve({
-            name: item._file.name,
-            length: item._file.size,
-            contentType: item._file.type,
-            date: new Date(),
-          });
-        });
-      },
+  http = inject(HttpClient);
+  public uploader: FileUploader = new FileUploader({
+    url: URL,
+    disableMultipart: false,
+    autoUpload: false,
+    method: 'post',
+    itemAlias: 'files', // Change this line
+  });
+
+  compressionLevel = 1;
+
+  option = new FormGroup({
+    type: new FormControl('zip'),
+  });
+
+  // public fileOverBase(e: any): void {
+  //   this.hasBaseDropZoneOver = e;
+  // }
+
+  // public fileOverAnother(e: any): void {
+  //   this.hasAnotherDropZoneOver = e;
+  // }
+
+  readonly min = 1;
+  readonly max = 11;
+  readonly sliderStep = 1;
+  readonly steps = (this.max - this.min) / this.sliderStep;
+  readonly quantum = 0.01;
+  files: File[] = [];
+
+  onFileSelected(event: any) {
+    const filesArray: Array<any> = Array.from(event);
+    this.files.push(...filesArray);
+    console.log(this.files)
+  }
+
+  uploadAll() {
+    const formData: FormData = new FormData();
+  
+    this.files.forEach((file, index) => {
+      formData.append(`files`, file, file.name);
     });
 
-    this.hasBaseDropZoneOver = false;
-    this.hasAnotherDropZoneOver = false;
-
-    this.response = '';
-
-    this.uploader.response.subscribe((res) => (this.response = res));
+    console.log(this.option.get('type')?.value);
+    formData.append('type', this.option.get('type')?.value ?? '');
+    formData.append('compressionLevel', this.compressionLevel.toString());
+  
+    this.http.post('http://localhost:3000/archive', formData, { responseType: 'blob' })
+    .subscribe(response => {
+      console.log(response);
+    });
   }
 
-  public fileOverBase(e: any): void {
-    this.hasBaseDropZoneOver = e;
+  removeFile(item: any, index: number) {
+    item.remove();
+    this.files.splice(index, 1);
   }
 
-  public fileOverAnother(e: any): void {
-    this.hasAnotherDropZoneOver = e;
+  removeAllFiles() {
+    this.uploader.clearQueue();
+    this.files = [];
   }
 
   readonly testForm = new FormGroup({

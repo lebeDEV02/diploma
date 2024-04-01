@@ -5,6 +5,10 @@ const path = require('path');
 const zlib = require('zlib');
 const { Readable } = require('stream');
 const cors = require('cors');
+const archiver = require('archiver');
+const { path7za } = require('7zip-bin');
+const { extractFull } = require('node-7z');
+const zip7 = require('7zip-min');
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:4200', credentials: true }));
@@ -116,6 +120,38 @@ app.post('/decompress', upload.array('files'), (req, res) => {
     .catch((err) => {
       res.status(500).send({ message: 'Error decompressing files', error: err.message });
     });
+});
+
+app.post('/archive', upload.array('files'), (req, res) => {
+  const archiverType = req.body.type || 'zip'; // Use 'zip' as the default archiver type
+  const compressionLevel = req.body.compressionLevel || 9;
+  console.log(archiverType) // Use 9 as the default compression level
+  const archive = archiver(archiverType, {
+    zlib: { level: compressionLevel } // Sets the compression level.
+  });
+
+  // Ensure 'archives' directory exists
+  const archivesDir = path.join(__dirname, 'archives');
+  if (!fs.existsSync(archivesDir)){
+    fs.mkdirSync(archivesDir);
+  }
+
+  const output = fs.createWriteStream(path.join(archivesDir, `archive.${archiverType}`));
+  // This is to handle the issue of end of stream error.
+  output.on('close', function() {
+    console.log('Archive wrote %d bytes', archive.pointer());
+  });
+
+  archive.pipe(output);
+
+  req.files.forEach((file, index) => {
+    const fileData = Buffer.from(file.buffer);
+    archive.append(fileData, { name: file.originalname });
+  });
+
+  archive.finalize();
+
+  res.status(200).send({ message: 'Files archived successfully.' });
 });
 
 app.listen(3000, () => {
