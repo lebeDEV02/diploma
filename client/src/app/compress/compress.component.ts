@@ -76,7 +76,7 @@ export class CompressComponent {
     disableMultipart: false,
     autoUpload: false,
     method: 'post',
-    itemAlias: 'files', // Change this line
+    itemAlias: 'files',
   });
 
   compressionLevel = 1;
@@ -119,12 +119,9 @@ export class CompressComponent {
       if (action === 'compress') {
         this.URL.set('http://localhost:3000/upload')
         this.uploader.setOptions({ url: 'http://localhost:3000/upload', additionalParameter: { compressionLevel: this.compressionLevel }});
-        // Use the compress endpoint
       } else if (action === 'decompress') {
         this.URL.set('http://localhost:3000/decompress')
-        // Use the decompress endpoint
       }
-      console.log(this.uploader)
     this.uploader.uploadAll();
     }
 
@@ -135,11 +132,9 @@ export class CompressComponent {
     downloadLink.href = url;
     downloadLink.download = file.name;
 
-    // Append the link to the body and trigger a click event
     document.body.appendChild(downloadLink);
     downloadLink.click();
 
-    // Clean up
     document.body.removeChild(downloadLink);
     window.URL.revokeObjectURL(url);
   }

@@ -25,6 +25,15 @@
   }
 }
 
+.compression-level {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  p {
+    margin-right: 1rem;
+  }
+}
+
 .password {
   display: flex;
   align-items: center;

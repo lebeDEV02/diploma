@@ -25,6 +25,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
 
   const compressionLevel = Number(req.body.compressionLevel); // Extract compressionLevel from the request body
 
+  console.log(req.body)
   console.log('COMPRESSION LEVEL', compressionLevel)
   const outputDirectory = path.join(__dirname, 'uploads');
   // Create the output directory if it doesn't exist
@@ -33,7 +34,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
   const promises = req.files.map((file, index) => {
     return new Promise((resolve, reject) => {
       // Create a Brotli compress instance
-      const brotliCompress = zlib.createBrotliCompress({ params: compressionLevel });
+      const brotliCompress = zlib.createBrotliCompress({ params: {[zlib.constants.BROTLI_PARAM_QUALITY]: compressionLevel} });
 
       // Define the output file paths
       const compressedFileName = 'compressed_file_' + Date.now() + '.br';
